@@ -179,7 +179,8 @@
             predictions.forEach(prediction => {
                 const [x, y, width, height] = prediction.bbox;
                 const label = prediction.class;
-                const score = Math.round(prediction.probability * 100);
+                // Fixed: using prediction.score to prevent NaN
+                const score = Math.round((prediction.score || 0) * 100);
 
                 // Draw bounding box
                 ctx.strokeStyle = "#00FF00";
@@ -195,7 +196,7 @@
                 ctx.font = "16px Arial";
                 ctx.fillText(`${label} (${score}%)`, x + 5, y > 20 ? y - 5 : 15);
 
-                htmlList += `<li><strong>${label}</strong> — ${score}% confidence</li>`;
+                htmlList += `<li><strong>${label}</strong> — ${score}% certainty</li>`;
             });
             htmlList += "</ul>";
             statusBox.innerHTML = htmlList;
