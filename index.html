@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Visual Assistant</title>
+    <title>GitHub Visual Assistant</title>
+    <a href="https://emilyh-d.github.io/ai-for-humanity/" class="btn-link">Home</a>
     <style>
         body {
             background: #101827;
@@ -22,7 +23,7 @@
             margin: auto;
         }
 
-        video, img {
+        video {
             width: 100%;
             max-width: 640px;
             border-radius: 15px;
@@ -47,6 +48,11 @@
             font-weight: bold;
         }
 
+        #startButton {
+            background: #269b55;
+            color: white;
+        }
+
         #voiceButton {
             background: #38bdf8;
             color: #101827;
@@ -57,12 +63,9 @@
             color: white;
         }
 
-        #objects {
+        #statusBox {
             font-size: 18px;
             line-height: 1.8;
-        }
-
-        .status {
             color: #a7f3d0;
         }
     </style>
@@ -72,23 +75,23 @@
 <div class="container">
 
     <h1>Visual Assistant</h1>
-    <p>AI-powered browser camera feed and voice feedback</p>
+    <p>AI-powered browser camera feed and speech synthesis</p>
 
-    <!-- Live browser camera feed -->
+    <!-- Live device camera stream -->
     <video id="webcam" autoplay playsinline muted></video>
 
     <div class="panel">
         <h2>System Status</h2>
-        <div id="objects">Click 'Start Camera' to initialize feed...</div>
+        <div id="statusBox">Click 'Start Camera' to initialize feed...</div>
     </div>
 
     <div class="panel">
         <h2>Voice Assistant</h2>
-        <p id="voiceStatus" class="status">Voice announcements are off.</p>
+        <p id="voiceStatus">Voice announcements are off.</p>
         
-        <button id="voiceButton" onclick="enableVoice()">Enable Voice Announcements</button>
+        <button id="startButton" onclick="startCamera()">Start Camera</button>
+        <button id="voiceButton" onclick="enableVoice()">Enable Voice</button>
         <button id="stopButton" onclick="stopVoice()">Stop Speaking</button>
-        <button onclick="startCamera()" style="background: #269b55; color: white;">Start Camera</button>
     </div>
 
 </div>
@@ -96,34 +99,39 @@
 <script>
     let voiceEnabled = false;
     const videoElement = document.getElementById("webcam");
+    const statusBox = document.getElementById("statusBox");
 
     async function startCamera() {
         try {
-            const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+            const stream = await navigator.mediaDevices.getUserMedia({ 
+                video: { facingMode: "user" }, 
+                audio: false 
+            });
             videoElement.srcObject = stream;
-            document.getElementById("objects").innerText = "Camera active. Monitoring stream...";
+            statusBox.innerText = "Camera active. Stream initialized successfully.";
             speak("Camera initialized successfully.");
         } catch (error) {
-            console.error("Camera access denied:", error);
-            document.getElementById("objects").innerText = "Error: Could not access webcam.";
+            console.error("Camera access error:", error);
+            statusBox.innerText = "Error: Could not access device webcam. Check permissions.";
         }
     }
 
     function enableVoice() {
         voiceEnabled = true;
-        document.getElementById("voiceStatusinnerText" = "Voice announcements are on.");
         document.getElementById("voiceStatus").innerText = "Voice announcements are on.";
         speak("Voice announcements enabled.");
     }
 
     function stopVoice() {
         voiceEnabled = false;
-        window.speechSynthesis.cancel();
+        if ("speechSynthesis" in window) {
+            window.speechSynthesis.cancel();
+        }
         document.getElementById("voiceStatus").innerText = "Voice announcements are off.";
     }
 
     function speak(message) {
-        if (!voiceEnabled) return;
+        if (!voiceEnabled || !("speechSynthesis" in window)) return;
         window.speechSynthesis.cancel();
         const speech = new SpeechSynthesisUtterance(message);
         speech.rate = 1;
